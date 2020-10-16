@@ -143,20 +143,23 @@ _libseccomp.seccomp_rule_add_exact_array.argtypes = (
 )
 _libseccomp.seccomp_rule_add_exact_array.restype = ctypes.c_int
 
-_libseccomp.seccomp_notify_alloc.argtypes = (
-    ctypes.POINTER(ctypes.POINTER(_Notif)),
-    ctypes.POINTER(ctypes.POINTER(_NotifResp)),
-)
-_libseccomp.seccomp_notify_alloc.restype = ctypes.c_int
+try:
+    _libseccomp.seccomp_notify_alloc.argtypes = (
+        ctypes.POINTER(ctypes.POINTER(_Notif)),
+        ctypes.POINTER(ctypes.POINTER(_NotifResp)),
+    )
+    _libseccomp.seccomp_notify_alloc.restype = ctypes.c_int
 
-_libseccomp.seccomp_notify_free.argtypes = (ctypes.POINTER(_Notif), ctypes.POINTER(_NotifResp))
-_libseccomp.seccomp_notify_free.restype = None
+    _libseccomp.seccomp_notify_free.argtypes = (ctypes.POINTER(_Notif), ctypes.POINTER(_NotifResp))
+    _libseccomp.seccomp_notify_free.restype = None
 
-_libseccomp.seccomp_notify_receive.argtypes = (ctypes.c_int, ctypes.POINTER(_Notif))
-_libseccomp.seccomp_notify_receive.restype = ctypes.c_int
+    _libseccomp.seccomp_notify_receive.argtypes = (ctypes.c_int, ctypes.POINTER(_Notif))
+    _libseccomp.seccomp_notify_receive.restype = ctypes.c_int
 
-_libseccomp.seccomp_notify_respond.argtypes = (ctypes.c_int, ctypes.POINTER(_NotifResp))
-_libseccomp.seccomp_notify_respond.restype = ctypes.c_int
+    _libseccomp.seccomp_notify_respond.argtypes = (ctypes.c_int, ctypes.POINTER(_NotifResp))
+    _libseccomp.seccomp_notify_respond.restype = ctypes.c_int
+except AttributeError:
+    pass
 
 _libseccomp.seccomp_export_bpf.argtypes = (ctypes.c_void_p, ctypes.c_int)
 _libseccomp.seccomp_export_bpf.restype = ctypes.c_int
@@ -388,6 +391,9 @@ class SyscallFilter:
         )
 
     def receive_notify(self) -> Notification:
+        if not hasattr(_libseccomp, "seccomp_notify_alloc"):
+            raise NotImplementedError
+
         req_ptr = ctypes.POINTER(_Notif)()
         _check_status(_libseccomp.seccomp_notify_alloc(ctypes.byref(req_ptr), None))
 
@@ -399,6 +405,9 @@ class SyscallFilter:
             _libseccomp.seccomp_notify_free(req_ptr, None)
 
     def respond_notify(self, response: NotificationResponse) -> None:
+        if not hasattr(_libseccomp, "seccomp_notify_alloc"):
+            raise NotImplementedError
+
         resp_ptr = ctypes.POINTER(_NotifResp)()
         _check_status(_libseccomp.seccomp_notify_alloc(None, ctypes.byref(resp_ptr)))
 
