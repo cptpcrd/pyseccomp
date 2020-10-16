@@ -1,0 +1,11 @@
+[MAIN]
+disable=missing-docstring,no-else-return,no-else-continue,no-else-raise,no-else-break,
+	bad-continuation,duplicate-code,
+	too-many-branches,too-many-nested-blocks,too-many-locals,too-many-statements,too-many-public-methods,too-many-return-statements,
+	cyclic-import
+max-line-length=100
+ignore-patterns=secret*
+
+good-names=i,j,n,ex,ch,fd,rc,T,_
+
+const-rgx=(([a-zA-Z_][a-zA-Z0-9_]*)|(__.*__))$

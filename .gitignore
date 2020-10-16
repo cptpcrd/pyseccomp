@@ -1,0 +1,14 @@
+*.py[cod]
+__pycache__/
+
+.mypy_cache/
+.pytype/
+
+.coverage
+htmlcov/
+
+build/
+dist/
+*.egg-info/
+
+_build

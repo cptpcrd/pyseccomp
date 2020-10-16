@@ -1,0 +1,151 @@
+name: CI
+on:
+  push:
+    branches:
+  pull_request:
+  release:
+    types: [published]
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  format_lint:
+    name: Formatting and linting
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        python-version: [3.8]
+        os: [ubuntu-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Set up repo
+        uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install pipenv
+        run: pip install pipenv
+
+      - name: Install dependencies
+        run: pipenv install --dev --deploy
+
+      - name: Format code
+        run: |
+          set -e
+          pipenv run ./scripts/format.sh
+          [ -z "$(git status --porcelain=v1)" ]
+
+      - name: Lint code
+        run: pipenv run ./scripts/check.sh
+
+  test:
+    name: Tests
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        python-version: [3.7, 3.8, pypy3]
+        os: [ubuntu-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Set up repo
+        uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      # Non-PyPy
+      - name: Install pipenv
+        run: pip install pipenv
+        if: "!startsWith(matrix.python-version, 'pypy')"
+      - name: Install dependencies
+        run: pipenv install --dev --deploy --python ${{ matrix.python-version }}
+        if: "!startsWith(matrix.python-version, 'pypy')"
+      - name: Run tests
+        run: pipenv run pytest --cov-report=xml --verbose tests/
+        if: "!startsWith(matrix.python-version, 'pypy')"
+
+      # PyPy
+      - name: Install dependencies
+        run: pip install dataclasses pytest pytest-cov
+        if: "startsWith(matrix.python-version, 'pypy')"
+      - name: Run tests
+        run: pytest --cov-report=xml --verbose tests/
+        if: "startsWith(matrix.python-version, 'pypy')"
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1.0.13
+        with:
+          name: ${{ matrix.os }}-${{ matrix.python-version }}
+          fail_ci_if_error: true
+          env_vars: OS,PYTHON_VERSION,JOB
+        env:
+          JOB: ${{ github.job }}
+          OS: ${{ matrix.os }}
+          PYTHON_VERSION: ${{ matrix.python-version }}
+
+  build:
+    name: Build
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        python-version: [3.7, 3.8]
+        os: [ubuntu-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Set up repo
+        uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install setuptools and wheel
+        run: pip install 'setuptools>=46.4.0' wheel
+
+      - name: Build package
+        run: python setup.py sdist bdist_wheel
+
+  publish:
+    name: Publish
+
+    needs:
+      - format_lint
+      - test
+      - build
+
+    runs-on: ubuntu-latest
+
+    # Only run for new releases
+    if: github.event_name == 'release'
+
+    steps:
+      - name: Set up repo
+        uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+      - name: Install setuptools and wheel
+        run: pip install 'setuptools>=46.4.0' wheel
+
+      - name: Build package
+        run: python setup.py sdist bdist_wheel
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@v1.3.1
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_TOKEN }}

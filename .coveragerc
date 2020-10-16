@@ -1,0 +1,9 @@
+[run]
+source = .
+
+[report]
+omit =
+    tests/*.py
+    setup.py
+
+# vim: ft=cfg ts=4 expandtab
