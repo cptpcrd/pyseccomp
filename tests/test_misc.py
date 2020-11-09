@@ -35,6 +35,19 @@ def test_bad_action() -> None:
         pyseccomp.SyscallFilter(0xDEADBEEF)
 
 
+def test_bad_arch() -> None:
+    filt = pyseccomp.SyscallFilter(pyseccomp.ALLOW)
+
+    with pytest.raises(OSError, match="Invalid argument"):
+        filt.add_arch(0xDEADBEEF)
+
+    with pytest.raises(OSError, match="Invalid argument"):
+        filt.remove_arch(0xDEADBEEF)
+
+    with pytest.raises(OSError, match="Invalid argument"):
+        filt.exist_arch(0xDEADBEEF)
+
+
 def test_bad_rule_args() -> None:
     filt = pyseccomp.SyscallFilter(pyseccomp.ALLOW)
 
