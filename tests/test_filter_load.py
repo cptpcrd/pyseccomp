@@ -9,13 +9,12 @@ import pyseccomp
 
 
 def test_nice_eperm() -> None:
-    pid = os.fork()
-
     filt = pyseccomp.SyscallFilter(pyseccomp.ALLOW)
 
     filt.add_rule(pyseccomp.ERRNO(errno.EPERM), "nice")
     filt.add_rule(pyseccomp.ERRNO(errno.EPERM), "setpriority")
 
+    pid = os.fork()
     if pid == 0:
         try:
             os.nice(0)
@@ -37,12 +36,11 @@ def test_nice_eperm() -> None:
 
 
 def test_getpriority_pid_1() -> None:
-    pid = os.fork()
-
     filt = pyseccomp.SyscallFilter(pyseccomp.ALLOW)
 
     filt.add_rule(pyseccomp.ERRNO(errno.EPERM), "getpriority", pyseccomp.Arg(1, pyseccomp.EQ, 1))
 
+    pid = os.fork()
     if pid == 0:
         try:
             os.getpriority(os.PRIO_PROCESS, 0)
@@ -67,13 +65,12 @@ def test_getpriority_pid_1() -> None:
 
 
 def test_nice_kill() -> None:
-    pid = os.fork()
-
     filt = pyseccomp.SyscallFilter(pyseccomp.ALLOW)
 
     filt.add_rule(pyseccomp.KILL, pyseccomp.resolve_syscall(pyseccomp.Arch.NATIVE, "nice"))
     filt.add_rule(pyseccomp.KILL, pyseccomp.resolve_syscall(pyseccomp.Arch.NATIVE, "setpriority"))
 
+    pid = os.fork()
     if pid == 0:
         try:
             os.nice(0)
