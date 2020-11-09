@@ -257,7 +257,7 @@ class Notification:
         self.syscall_ip = syscall_ip
         self.syscall_args = list(syscall_args)
 
-        if len(self.syscall_args) == 6:
+        if len(self.syscall_args) != 6:
             raise IndexError
 
     @classmethod
