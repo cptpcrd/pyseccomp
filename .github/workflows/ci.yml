@@ -52,7 +52,7 @@ jobs:
       fail-fast: false
 
       matrix:
-        python-version: [3.7, 3.8, pypy3]
+        python-version: [3.6, 3.7, 3.8, pypy3]
         os: [ubuntu-latest]
 
     runs-on: ${{ matrix.os }}
@@ -102,7 +102,7 @@ jobs:
       fail-fast: false
 
       matrix:
-        python-version: [3.7, 3.8]
+        python-version: [3.6, 3.7, 3.8]
         os: [ubuntu-latest]
 
     runs-on: ${{ matrix.os }}
