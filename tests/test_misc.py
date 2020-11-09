@@ -28,3 +28,25 @@ def test_api_get_set() -> None:
         assert pyseccomp.get_api() == 2
     finally:
         pyseccomp.set_api(orig_api)
+
+
+def test_bad_action() -> None:
+    with pytest.raises(OSError, match="Invalid argument"):
+        pyseccomp.SyscallFilter(0xDEADBEEF)
+
+
+def test_bad_rule_args() -> None:
+    filt = pyseccomp.SyscallFilter(pyseccomp.ALLOW)
+
+    with pytest.raises(ValueError, match=r"^Too many arguments$"):
+        filt.add_rule(
+            pyseccomp.KILL_PROCESS,
+            "prctl",
+            pyseccomp.Arg(1, pyseccomp.EQ, 0),
+            pyseccomp.Arg(2, pyseccomp.EQ, 0),
+            pyseccomp.Arg(3, pyseccomp.EQ, 0),
+            pyseccomp.Arg(4, pyseccomp.EQ, 0),
+            pyseccomp.Arg(5, pyseccomp.EQ, 0),
+            pyseccomp.Arg(6, pyseccomp.EQ, 0),
+            pyseccomp.Arg(7, pyseccomp.EQ, 0),
+        )
