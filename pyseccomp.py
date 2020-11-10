@@ -145,6 +145,9 @@ _libseccomp.seccomp_rule_add_exact_array.argtypes = (
 )
 _libseccomp.seccomp_rule_add_exact_array.restype = ctypes.c_int
 
+_libseccomp.seccomp_syscall_priority.argtypes = (ctypes.c_void_p, ctypes.c_int, ctypes.c_uint8)
+_libseccomp.seccomp_syscall_priority.restype = ctypes.c_int
+
 try:
     _libseccomp.seccomp_notify_alloc.argtypes = (
         ctypes.POINTER(ctypes.POINTER(_Notif)),
@@ -154,6 +157,9 @@ try:
 
     _libseccomp.seccomp_notify_free.argtypes = (ctypes.POINTER(_Notif), ctypes.POINTER(_NotifResp))
     _libseccomp.seccomp_notify_free.restype = None
+
+    _libseccomp.seccomp_notify_fd.argtypes = (ctypes.c_void_p,)
+    _libseccomp.seccomp_notify_fd.restype = ctypes.c_int
 
     _libseccomp.seccomp_notify_receive.argtypes = (ctypes.c_int, ctypes.POINTER(_Notif))
     _libseccomp.seccomp_notify_receive.restype = ctypes.c_int
