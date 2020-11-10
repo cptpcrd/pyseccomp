@@ -5,6 +5,13 @@ import traceback
 
 import pytest
 
+try:
+    from pytest_cov.embed import cleanup as cov_cleanup
+    from pytest_cov.embed import init as cov_init
+except ImportError:
+    cov_init = None
+    cov_cleanup = None
+
 import pyseccomp
 
 
@@ -17,12 +24,18 @@ def test_nice_eperm() -> None:
     pid = os.fork()
     if pid == 0:
         try:
+            if cov_init is not None:
+                cov_init()
+
             os.nice(0)
 
             filt.load()
 
             with pytest.raises(PermissionError):
                 os.nice(0)
+
+            if cov_cleanup is not None:
+                cov_cleanup()
 
         except Exception:  # pylint: disable=broad-except
             traceback.print_exc()
