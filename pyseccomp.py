@@ -275,7 +275,7 @@ class Notification:
             syscall=raw.data.nr,
             syscall_arch=raw.data.arch,
             syscall_ip=raw.data.instruction_pointer,
-            syscall_args=list(raw.args),
+            syscall_args=list(raw.data.args),
         )
 
 
@@ -407,6 +407,8 @@ class SyscallFilter:
 
         try:
             fd = _libseccomp.seccomp_notify_fd(self._filter)
+            _check_status(fd)
+
             _check_status(_libseccomp.seccomp_notify_receive(fd, req_ptr))
             return Notification._from_raw(req_ptr.contents)  # pylint: disable=protected-access
         finally:
@@ -423,6 +425,8 @@ class SyscallFilter:
 
         try:
             fd = _libseccomp.seccomp_notify_fd(self._filter)
+            _check_status(fd)
+
             _check_status(_libseccomp.seccomp_notify_respond(fd, resp_ptr))
         finally:
             _libseccomp.seccomp_notify_free(None, resp_ptr)
