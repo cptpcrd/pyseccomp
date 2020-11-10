@@ -113,3 +113,27 @@ def test_nice_kill() -> None:
     _, wstatus = os.waitpid(pid, 0)
     assert os.WIFSIGNALED(wstatus)
     assert os.WTERMSIG(wstatus) == signal.SIGSYS
+
+
+def test_nice_kill_exactly() -> None:
+    filt = pyseccomp.SyscallFilter(pyseccomp.ALLOW)
+
+    for name in ["nice", "setpriority"]:
+        sys_nr = pyseccomp.resolve_syscall(pyseccomp.Arch.NATIVE, name)
+        if sys_nr >= 0:
+            filt.add_rule_exactly(pyseccomp.KILL, name)
+
+    pid = os.fork()
+    if pid == 0:
+        try:
+            os.nice(0)
+
+            filt.load()
+
+            os.nice(0)
+        finally:
+            os._exit(0)  # pylint: disable=protected-access
+
+    _, wstatus = os.waitpid(pid, 0)
+    assert os.WIFSIGNALED(wstatus)
+    assert os.WTERMSIG(wstatus) == signal.SIGSYS
