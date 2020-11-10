@@ -35,6 +35,35 @@ def test_nice_eperm() -> None:
     assert os.WEXITSTATUS(wstatus) == 0
 
 
+def test_nice_eperm_exactly() -> None:
+    filt = pyseccomp.SyscallFilter(pyseccomp.ALLOW)
+
+    for name in ["nice", "setpriority"]:
+        sys_nr = pyseccomp.resolve_syscall(pyseccomp.Arch.NATIVE, name)
+        if sys_nr >= 0:
+            filt.add_rule_exactly(pyseccomp.ERRNO(errno.EPERM), sys_nr)
+
+    pid = os.fork()
+    if pid == 0:
+        try:
+            os.nice(0)
+
+            filt.load()
+
+            with pytest.raises(PermissionError):
+                os.nice(0)
+
+        except Exception:  # pylint: disable=broad-except
+            traceback.print_exc()
+            os._exit(1)  # pylint: disable=protected-access
+        finally:
+            os._exit(0)  # pylint: disable=protected-access
+
+    _, wstatus = os.waitpid(pid, 0)
+    assert os.WIFEXITED(wstatus)
+    assert os.WEXITSTATUS(wstatus) == 0
+
+
 def test_getpriority_pid_1() -> None:
     filt = pyseccomp.SyscallFilter(pyseccomp.ALLOW)
 

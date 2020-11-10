@@ -1,3 +1,6 @@
+import os
+from typing import Union, cast
+
 import pytest
 
 import pyseccomp
@@ -103,3 +106,36 @@ def test_get_set_attr() -> None:
 
     filt.set_attr(pyseccomp.Attr.CTL_NNP, 0)
     assert filt.get_attr(pyseccomp.Attr.CTL_NNP) == 0
+
+
+def test_syscall_priority() -> None:
+    filt = pyseccomp.SyscallFilter(pyseccomp.KILL)
+
+    filt.syscall_priority(pyseccomp.resolve_syscall(pyseccomp.Arch.NATIVE, "write"), 100)
+    filt.syscall_priority("write", 100)
+
+    for syscall in [pyseccomp.resolve_syscall(pyseccomp.Arch.NATIVE, "NOEXIST"), "NOEXIST"]:
+        with pytest.raises(OSError, match=r"Invalid argument"):
+            filt.syscall_priority(cast(Union[int, str], syscall), 100)
+
+
+def test_export_bpf() -> None:
+    filt = pyseccomp.SyscallFilter(pyseccomp.KILL)
+
+    r_fd, w_fd = os.pipe()
+    with open(r_fd, "rb") as rfile:
+        with open(w_fd, "wb") as wfile:
+            filt.export_bpf(wfile)
+
+        assert rfile.read() != b""
+
+
+def test_export_pfc() -> None:
+    filt = pyseccomp.SyscallFilter(pyseccomp.KILL)
+
+    r_fd, w_fd = os.pipe()
+    with open(r_fd, "rb") as rfile:
+        with open(w_fd, "wb") as wfile:
+            filt.export_pfc(wfile)
+
+        assert rfile.read() != b""
