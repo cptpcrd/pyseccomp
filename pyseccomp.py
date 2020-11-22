@@ -29,7 +29,7 @@ NE = 1
 LT = 2
 LE = 3
 EQ = 4
-FE = 5
+GE = 5
 GT = 6
 MASKED_EQ = 7
 
