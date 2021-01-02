@@ -2,6 +2,8 @@ import pytest
 
 import pyseccomp
 
+from .util import seccomp_version
+
 
 def test_resolve_syscall() -> None:
     write_nr = pyseccomp.resolve_syscall(pyseccomp.Arch.NATIVE, "write")
@@ -17,6 +19,9 @@ def test_resolve_syscall() -> None:
     assert pyseccomp.resolve_syscall(pyseccomp.Arch.NATIVE, "NO_SYSCALL") == -1
 
 
+@pytest.mark.skipif(
+    seccomp_version() < (2, 4, 0), reason="api_get()/api_set() not supported on libseccomp<2.4"
+)
 def test_api_get_set() -> None:
     orig_api = pyseccomp.get_api()
 

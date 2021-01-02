@@ -118,12 +118,6 @@ _libseccomp.seccomp_arch_remove.restype = ctypes.c_int
 _libseccomp.seccomp_arch_native.argtypes = ()
 _libseccomp.seccomp_arch_native.restype = ctypes.c_uint32
 
-_libseccomp.seccomp_api_get.argtypes = ()
-_libseccomp.seccomp_api_get.restype = ctypes.c_uint
-
-_libseccomp.seccomp_api_set.argtypes = (ctypes.c_uint,)
-_libseccomp.seccomp_api_set.restype = ctypes.c_int
-
 _libseccomp.seccomp_syscall_resolve_num_arch.argtypes = (ctypes.c_uint32, ctypes.c_int)
 _libseccomp.seccomp_syscall_resolve_num_arch.restype = ctypes.c_void_p
 
@@ -147,6 +141,16 @@ _libseccomp.seccomp_rule_add_exact_array.restype = ctypes.c_int
 
 _libseccomp.seccomp_syscall_priority.argtypes = (ctypes.c_void_p, ctypes.c_int, ctypes.c_uint8)
 _libseccomp.seccomp_syscall_priority.restype = ctypes.c_int
+
+try:
+    _libseccomp.seccomp_api_get.argtypes = ()
+    _libseccomp.seccomp_api_get.restype = ctypes.c_uint
+
+    _libseccomp.seccomp_api_set.argtypes = (ctypes.c_uint,)
+    _libseccomp.seccomp_api_set.restype = ctypes.c_int
+except AttributeError:
+    pass
+
 
 try:
     _libseccomp.seccomp_notify_alloc.argtypes = (
@@ -447,10 +451,16 @@ def system_arch() -> int:
 
 
 def get_api() -> int:
+    if not hasattr(_libseccomp, "seccomp_api_get"):
+        raise NotImplementedError
+
     return cast(int, _libseccomp.seccomp_api_get())
 
 
 def set_api(level: int) -> None:
+    if not hasattr(_libseccomp, "seccomp_api_set"):
+        raise NotImplementedError
+
     _check_status(_libseccomp.seccomp_api_set(level))
 
 
