@@ -6,7 +6,7 @@ import os
 import weakref
 from typing import Any, Collection, Iterable, Union, cast, overload
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 
 KILL_PROCESS = 0x80000000
 KILL_THREAD = 0x00000000
