@@ -305,8 +305,6 @@ class NotificationResponse:
 
 class SyscallFilter:
     def __init__(self, defaction: int) -> None:
-        self._defaction = defaction
-
         self._filter = _libseccomp.seccomp_init(defaction)
         if self._filter is None:
             # Assume EINVAL, even though it could technically be ENOMEM
@@ -325,10 +323,12 @@ class SyscallFilter:
     def merge(self, filter: "SyscallFilter") -> None:  # pylint: disable=redefined-builtin
         # pylint: disable=protected-access
 
+        filter_defaction = filter.get_attr(Attr.ACT_DEFAULT)
+
         _check_status(_libseccomp.seccomp_merge(self._filter, filter._filter))
 
         # filter._filter is no longer valid
-        filter._filter = _libseccomp.seccomp_init(filter._defaction)
+        filter._filter = _libseccomp.seccomp_init(filter_defaction)
         filter._refinalize()
         if filter._filter is None:
             raise _build_oserror(errno.ENOMEM)
