@@ -7,15 +7,15 @@ verify_ssl = true
 
 [dev-packages]
 flake8 = "~=3.9.2"
-pylint = "~=2.8.2"
-mypy = "~=0.812"
+pylint = "~=2.8.3"
+mypy = "~=0.902"
 
 isort = "~=5.8.0"
-black = "==21.5b1"
+black = "==21.6b0"
 autopep8 = "~=1.5.7"
 
 pytest = "~=6.2.4"
-pytest-cov = "~=2.12.0"
+pytest-cov = "~=2.12.1"
 
 # Required by pytest, but not properly pulled in by Pipenv
 importlib-metadata = {version = ">=0.12", markers = "python_version < '3.8'"}
